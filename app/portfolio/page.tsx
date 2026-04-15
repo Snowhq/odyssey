@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 
 type Market = {
   id: string; question: string; category: string;
@@ -10,10 +11,12 @@ type Market = {
 export default function PortfolioPage() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = usePrivy();
+const userId = user?.id || "anonymous";
 
   useEffect(() => {
     fetch("/api/predictions").then(r => r.json()).then(data => {
-      setMarkets(Array.isArray(data) ? data.filter((m: Market) => m.bets.length > 0) : []);
+      setMarkets(Array.isArray(data) ? data.filter((m: Market) => m.bets.some((b: any) => b.userId === userId)) : []);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);

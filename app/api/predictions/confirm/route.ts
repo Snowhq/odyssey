@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAll, saveAll } from "../route";
 
 export async function POST(req: NextRequest) {
-  const { marketId, side, amount } = await req.json();
+  const { marketId, side, amount, userId } = await req.json();
 
   if (!marketId || !side || !amount) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
     amount: parseFloat(amount),
     paidAt: new Date().toISOString(),
     txHash: null,
+    userId: userId || "anonymous",
   });
 
   if (side === "yes") {
