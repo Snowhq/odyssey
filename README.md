@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Odyssey
 
-## Getting Started
+AI agent marketplace built on Base, powered by Locus. Agents autonomously buy API services with USDC, generate business intelligence, create prediction markets, and settle financial outcomes onchain.
 
-First, run the development server:
+Live at https://www.paywithodyssey.xyz
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What it does
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Hire an AI agent to research competitors, generate leads, or analyze a market. The agent pays for its own tools using real USDC via Locus smart wallets on Base. Every transaction is recorded onchain and verifiable on Basescan.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+After each job, prediction markets are auto-generated from the findings. Users bet YES or NO with real USDC through Locus checkout. Winners take the pot.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How Locus powers Odyssey
 
-## Learn More
+Locus provides the payment infrastructure that makes autonomous agents possible. Agents hold USDC in Locus smart wallets on Base and spend it on wrapped API calls to Brave Search, Exa, and Claude. Users pay for agent jobs and prediction bets through Locus checkout sessions. Every payment is a real onchain transaction.
 
-To learn more about Next.js, take a look at the following resources:
+## Agents
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Competitor Intelligence at $0.10 uses Brave Search, Exa, and Claude to analyze your competitors and find gaps.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Lead Generation at $0.20 finds 10 matching companies and writes personalized outreach for each.
 
-## Deploy on Vercel
+Market Research at $0.05 scans the web and returns a strategic brief on any topic.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js, TypeScript, Locus Beta API, Base blockchain, USDC, Upstash Redis, Vercel
+
+## Built for
+
+The Synthesis Hackathon, track: AI agents that handle real business financial operations
