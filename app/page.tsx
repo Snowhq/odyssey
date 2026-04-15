@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -10,6 +11,7 @@ export default function Home() {
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [stats, setStats] = useState({ balance: "0.00", total_spent: "0.00", tx_count: 0 });
+  const { ready, authenticated, user, login, logout } = usePrivy();
 
   async function sendChat() {
     if (!chatInput.trim() || chatLoading) return;
@@ -120,7 +122,25 @@ export default function Home() {
           <a href="/portfolio" className="nav-a">Portfolio</a>
           <a href="/about" className="nav-a">Docs</a>
         </div>
-        <a href="/hire" className="hire-btn" style={{ background: "#fff", color: "#000", padding: "8px 20px", fontSize: 12, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Hire an agent →</a>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+  {ready && (
+    authenticated ? (
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <span style={{ color: "#666", fontSize: 11, fontFamily: "'Space Mono', monospace" }}>
+          {user?.email?.address || (user?.wallet?.address?.slice(0,6) + "...")}
+        </span>
+        <button onClick={logout} style={{ background: "transparent", border: "1px solid #333", color: "#888", padding: "7px 14px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
+          Sign out
+        </button>
+      </div>
+    ) : (
+      <button onClick={login} style={{ background: "transparent", border: "1px solid #555", color: "#ccc", padding: "7px 18px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", letterSpacing: "0.05em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+        Sign in
+      </button>
+    )
+  )}
+  <a href="/hire" className="hire-btn" style={{ background: "#fff", color: "#000", padding: "8px 20px", fontSize: 12, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Hire an agent →</a>
+</div>
         {/* Mobile menu */}
         <a href="/hire" className="mobile-hire" style={{ background: "#fff", color: "#000", padding: "7px 14px", fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>Hire →</a>
       </nav>
