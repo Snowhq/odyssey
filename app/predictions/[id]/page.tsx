@@ -370,7 +370,7 @@ function MarketContent() {
 
                 {placing && (
                   <div style={{ marginTop: 12, padding: "12px", background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                    <p style={{ fontSize: 11, color: "#15803d", marginBottom: 8, fontWeight: 600 }}>Paid on Locus? Click to confirm your bet:</p>
+                    <p style={{ fontSize: 11, color: "#15803d", marginBottom: 8, fontWeight: 600 }}>Paid on Locus? Click to confirm:</p>
                     <button onClick={() => {
                       fetch("/api/predictions/confirm", {
                         method: "POST",
