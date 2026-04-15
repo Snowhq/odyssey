@@ -46,6 +46,7 @@ function MarketContent() {
   const [amount, setAmount] = useState("0.10");
   const [placing, setPlacing] = useState(false);
   const [lastSide, setLastSide] = useState<"yes" | "no">("yes");
+  const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [error, setError] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [resolving, setResolving] = useState(false);
@@ -63,6 +64,7 @@ function MarketContent() {
   useEffect(() => {
     if (justBet && betSide && betAmt && !confirmed) {
       setConfirmed(true);
+      setAwaitingConfirm(false);
       fetch("/api/predictions/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -77,6 +79,7 @@ function MarketContent() {
     if (isNaN(amt) || amt < 0.01) { setError("Minimum bet is $0.01 USDC"); return; }
     setPlacing(true);
     setLastSide(side);
+    setAwaitingConfirm(false);
     try {
       const res = await fetch("/api/predictions/bet", {
         method: "POST",
@@ -94,6 +97,7 @@ function MarketContent() {
           if (popup?.closed) {
             clearInterval(timer);
             setPlacing(false);
+            setAwaitingConfirm(true);
             loadMarket();
             return;
           }
@@ -103,6 +107,7 @@ function MarketContent() {
               clearInterval(timer);
               popup?.close();
               setPlacing(false);
+              setAwaitingConfirm(false);
               fetch("/api/predictions/confirm", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -354,13 +359,13 @@ function MarketContent() {
                 )}
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  <button className="yes-btn" onClick={() => placeBet("yes")} disabled={placing}
-                    style={{ padding: 14, fontSize: 13, fontWeight: 800, opacity: placing ? 0.5 : 1, cursor: placing ? "not-allowed" : "pointer", transition: "all 0.15s" }}>
-                    {placing ? "..." : "Buy YES"}
+                  <button className="yes-btn" onClick={() => placeBet("yes")} disabled={placing || awaitingConfirm}
+                    style={{ padding: 14, fontSize: 13, fontWeight: 800, opacity: (placing || awaitingConfirm) ? 0.5 : 1, cursor: (placing || awaitingConfirm) ? "not-allowed" : "pointer", transition: "all 0.15s" }}>
+                    {placing ? "Opening..." : "Buy YES"}
                   </button>
-                  <button className="no-btn" onClick={() => placeBet("no")} disabled={placing}
-                    style={{ padding: 14, fontSize: 13, fontWeight: 800, opacity: placing ? 0.5 : 1, cursor: placing ? "not-allowed" : "pointer", transition: "all 0.15s" }}>
-                    {placing ? "..." : "Buy NO"}
+                  <button className="no-btn" onClick={() => placeBet("no")} disabled={placing || awaitingConfirm}
+                    style={{ padding: 14, fontSize: 13, fontWeight: 800, opacity: (placing || awaitingConfirm) ? 0.5 : 1, cursor: (placing || awaitingConfirm) ? "not-allowed" : "pointer", transition: "all 0.15s" }}>
+                    {placing ? "Opening..." : "Buy NO"}
                   </button>
                 </div>
 
@@ -368,17 +373,22 @@ function MarketContent() {
                   Payment via Locus · USDC on Base
                 </p>
 
-                {placing && (
-                  <div style={{ marginTop: 12, padding: "12px", background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                    <p style={{ fontSize: 11, color: "#15803d", marginBottom: 8, fontWeight: 600 }}>Paid on Locus? Click to confirm:</p>
+                {(placing || awaitingConfirm) && (
+                  <div style={{ marginTop: 12, padding: "14px", background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                    <p style={{ fontSize: 11, color: "#15803d", marginBottom: 10, fontWeight: 600, lineHeight: 1.5 }}>
+                      {placing ? "Locus checkout is open. Pay there then click confirm." : "Paid on Locus? Click confirm to record your bet."}
+                    </p>
                     <button onClick={() => {
                       fetch("/api/predictions/confirm", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ marketId: id, side: lastSide, amount: parseFloat(amount) }),
-                      }).then(() => { setPlacing(false); loadMarket(); });
-                    }} style={{ background: "#15803d", color: "#fff", border: "none", padding: "8px 0", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", letterSpacing: "0.05em" }}>
-                      Confirm bet ✓
+                      }).then(() => { setPlacing(false); setAwaitingConfirm(false); loadMarket(); });
+                    }} style={{ background: "#15803d", color: "#fff", border: "none", padding: "10px 0", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                      I paid — confirm {lastSide.toUpperCase()} bet ✓
+                    </button>
+                    <button onClick={() => { setPlacing(false); setAwaitingConfirm(false); }} style={{ background: "transparent", color: "#aaa", border: "none", padding: "8px 0", fontSize: 11, cursor: "pointer", fontFamily: "inherit", width: "100%", marginTop: 6 }}>
+                      Cancel
                     </button>
                   </div>
                 )}
