@@ -45,6 +45,7 @@ function MarketContent() {
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("0.10");
   const [placing, setPlacing] = useState(false);
+  const [lastSide, setLastSide] = useState<"yes" | "no">("yes");
   const [error, setError] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [resolving, setResolving] = useState(false);
@@ -75,6 +76,7 @@ function MarketContent() {
     const amt = parseFloat(amount);
     if (isNaN(amt) || amt < 0.01) { setError("Minimum bet is $0.01 USDC"); return; }
     setPlacing(true);
+    setLastSide(side);
     try {
       const res = await fetch("/api/predictions/bet", {
         method: "POST",
@@ -83,7 +85,32 @@ function MarketContent() {
       });
       const data = await res.json();
       if (data.redirectUrl) {
-        window.location.href = data.redirectUrl;
+        const popup = window.open(
+          data.redirectUrl,
+          "locus-checkout",
+          "width=500,height=700,left=" + (window.screenX + (window.outerWidth - 500) / 2) + ",top=" + (window.screenY + (window.outerHeight - 700) / 2)
+        );
+        const timer = setInterval(() => {
+          if (popup?.closed) {
+            clearInterval(timer);
+            setPlacing(false);
+            loadMarket();
+            return;
+          }
+          try {
+            const url = popup?.location?.href || "";
+            if (url.includes("success=true")) {
+              clearInterval(timer);
+              popup?.close();
+              setPlacing(false);
+              fetch("/api/predictions/confirm", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ marketId: id, side, amount: amt }),
+              }).then(() => loadMarket());
+            }
+          } catch { /* cross-origin */ }
+        }, 800);
       } else {
         setError(data.error || "Something went wrong.");
         setPlacing(false);
@@ -340,6 +367,21 @@ function MarketContent() {
                 <p className="mono" style={{ color: "#ccc", fontSize: 9, textAlign: "center", marginTop: 14, letterSpacing: "0.05em" }}>
                   Payment via Locus · USDC on Base
                 </p>
+
+                {placing && (
+                  <div style={{ marginTop: 12, padding: "12px", background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                    <p style={{ fontSize: 11, color: "#15803d", marginBottom: 8, fontWeight: 600 }}>Paid on Locus? Click to confirm your bet:</p>
+                    <button onClick={() => {
+                      fetch("/api/predictions/confirm", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ marketId: id, side: lastSide, amount: parseFloat(amount) }),
+                      }).then(() => { setPlacing(false); loadMarket(); });
+                    }} style={{ background: "#15803d", color: "#fff", border: "none", padding: "8px 0", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", letterSpacing: "0.05em" }}>
+                      Confirm bet ✓
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
