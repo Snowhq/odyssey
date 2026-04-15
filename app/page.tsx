@@ -119,7 +119,6 @@ export default function Home() {
           <a href="/predictions" className="nav-a">Predictions</a>
           <a href="/portfolio" className="nav-a">Portfolio</a>
           <a href="/about" className="nav-a">Docs</a>
-          <a href="/chat" className="nav-a">Ask AI</a>
         </div>
         <a href="/hire" className="hire-btn" style={{ background: "#fff", color: "#000", padding: "8px 20px", fontSize: 12, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Hire an agent →</a>
         {/* Mobile menu */}
