@@ -1,21 +1,25 @@
 import { NextResponse } from "next/server";
-import { readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { Redis } from "@upstash/redis";
 
-const DB = join(process.cwd(), "data/predictions.json");
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
-export function getAll() {
+export async function getAll() {
   try {
-    return JSON.parse(readFileSync(DB, "utf-8"));
+    const data = await redis.get("predictions");
+    if (!data) return [];
+    return Array.isArray(data) ? data : JSON.parse(data as string);
   } catch {
     return [];
   }
 }
 
-export function saveAll(data: any[]) {
-  writeFileSync(DB, JSON.stringify(data, null, 2));
+export async function saveAll(predictions: any[]) {
+  await redis.set("predictions", JSON.stringify(predictions));
 }
 
 export async function GET() {
-  return NextResponse.json(getAll());
+  return NextResponse.json(await getAll());
 }

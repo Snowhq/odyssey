@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAll, saveAll } from "../route";
 
-const BASE = "https://beta-api.paywithlocus.com/api";
-const KEY = process.env.LOCUS_API_KEY;
-
 export async function POST(req: NextRequest) {
   const { marketId, outcome } = await req.json();
 
@@ -11,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  const all = getAll();
+  const all = await getAll();
   const market = all.find((m: any) => m.id === marketId);
 
   if (!market) return NextResponse.json({ error: "Market not found" }, { status: 404 });
@@ -21,7 +18,6 @@ export async function POST(req: NextRequest) {
   const winningBets = market.bets.filter((b: any) => b.side === outcome);
   const winningPool = outcome === "yes" ? market.yesTotal : market.noTotal;
 
-  // Pay out winners proportionally via Locus
   const payouts: any[] = [];
   for (const bet of winningBets) {
     if (winningPool === 0) continue;
@@ -29,25 +25,17 @@ export async function POST(req: NextRequest) {
     payouts.push({ bet, payout });
   }
 
-  // Mark resolved first
   market.resolved = true;
   market.outcome = outcome;
   market.resolvedAt = new Date().toISOString();
   market.payouts = payouts;
-  saveAll(all);
+  await saveAll(all);
 
-  return NextResponse.json({
-    ok: true,
-    outcome,
-    total,
-    winners: payouts.length,
-    payouts,
-  });
+  return NextResponse.json({ ok: true, outcome, total, winners: payouts.length, payouts });
 }
 
-// Auto-resolve all expired markets
 export async function GET() {
-  const all = getAll();
+  const all = await getAll();
   const now = Date.now();
   const resolved = [];
 
@@ -55,7 +43,6 @@ export async function GET() {
     if (market.resolved) continue;
     if (new Date(market.expiresAt).getTime() > now) continue;
 
-    // Pick winner based on current odds
     const total = market.yesTotal + market.noTotal;
     let outcome = "yes";
     if (total > 0) {
@@ -68,7 +55,7 @@ export async function GET() {
     resolved.push({ id: market.id, question: market.question, outcome });
   }
 
-  if (resolved.length > 0) saveAll(all);
+  if (resolved.length > 0) await saveAll(all);
 
   return NextResponse.json({ resolved });
 }

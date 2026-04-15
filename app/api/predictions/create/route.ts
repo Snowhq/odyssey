@@ -37,8 +37,7 @@ Respond ONLY with valid JSON array, no markdown, no explanation:
     });
 
     const claudeData = await claudeRes.json();
-console.log("Claude response:", JSON.stringify(claudeData));
-const text = claudeData?.data?.content?.[0]?.text || "[]";
+    const text = claudeData?.data?.content?.[0]?.text || "[]";
 
     let questions;
     try {
@@ -68,8 +67,8 @@ const text = claudeData?.data?.content?.[0]?.text || "[]";
       noTotal: 0,
     }));
 
-    const all = getAll();
-    saveAll([...newMarkets, ...all]);
+    const all = await getAll();
+    await saveAll([...newMarkets, ...all]);
 
     return NextResponse.json({ markets: newMarkets });
   } catch (err) {

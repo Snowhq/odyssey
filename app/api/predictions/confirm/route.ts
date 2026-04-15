@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  const all = getAll();
+  const all = await getAll();
   const market = all.find((m: any) => m.id === marketId);
 
   if (!market) {
@@ -28,6 +28,6 @@ export async function POST(req: NextRequest) {
     market.noTotal = (market.noTotal || 0) + parseFloat(amount);
   }
 
-  saveAll(all);
+  await saveAll(all);
   return NextResponse.json({ ok: true });
 }
