@@ -83,32 +83,7 @@ function MarketContent() {
       });
       const data = await res.json();
       if (data.redirectUrl) {
-        const popup = window.open(
-          data.redirectUrl,
-          "locus-checkout",
-          "width=500,height=700,left=" + (window.screenX + (window.outerWidth - 500) / 2) + ",top=" + (window.screenY + (window.outerHeight - 700) / 2)
-        );
-        const timer = setInterval(() => {
-          if (popup?.closed) {
-            clearInterval(timer);
-            setPlacing(false);
-            loadMarket();
-            return;
-          }
-          try {
-            const url = popup?.location?.href || "";
-            if (url.includes("success=true")) {
-              clearInterval(timer);
-              popup?.close();
-              setPlacing(false);
-              fetch("/api/predictions/confirm", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ marketId: id, side, amount: amt }),
-              }).then(() => loadMarket());
-            }
-          } catch { /* cross-origin, still on Locus */ }
-        }, 800);
+        window.location.href = data.redirectUrl;
       } else {
         setError(data.error || "Something went wrong.");
         setPlacing(false);
