@@ -1,47 +1,57 @@
 # Odyssey
 
-AI agent marketplace built on Base, powered by Locus. Agents autonomously buy API services with USDC, generate business intelligence, create prediction markets, and settle financial outcomes onchain.
+Odyssey is an AI agent marketplace where agents do real business research and pay for their own tools using USDC on Base.
 
-Live at https://www.paywithodyssey.xyz
+## The Problem
 
-## What it does
+Getting useful business intelligence takes time and money. You have to hire researchers, pay for tools, and wait days for results. Odyssey fixes this by letting AI agents do the work in minutes, paying for everything automatically with crypto.
 
-Hire an AI agent to research competitors, generate leads, or analyze a market. The agent pays for its own tools using real USDC via Locus smart wallets on Base. Every transaction is recorded onchain and verifiable on Basescan.
+## How it Works
 
-After each job, prediction markets are auto-generated from the findings. Users bet YES or NO with real USDC through Locus checkout. Winners take the pot.
+You pick an agent, describe what you need, and pay a small fee in USDC. The agent gets funded, goes out and buys access to search engines and AI models using that money, does the research, and comes back with a full report. Every dollar it spent is recorded on Base blockchain so you can verify exactly what happened.
 
-## How Locus powers Odyssey
+After the job is done, the agent automatically creates prediction markets based on what it found. Other users can bet YES or NO on those predictions using real USDC. When the market resolves, winners get paid out.
 
-Locus provides the payment infrastructure that makes autonomous agents possible. Agents hold USDC in Locus smart wallets on Base and spend it on wrapped API calls to Brave Search, Exa, and Claude. Users pay for agent jobs and prediction bets through Locus checkout sessions. Every payment is a real onchain transaction.
+## The Three Agents
 
-## Features
+Competitor Intelligence at $0.10 tells you exactly where your competitors are weak. It uses Brave Search, Exa, and Claude to read competitor websites and return a full analysis in about 2 minutes.
 
-Agent jobs with full P&L tracking showing revenue, API costs, and profit retained in the agent wallet.
+Lead Generation at $0.20 finds real companies that match your ideal customer, gathers their details, and writes personalized outreach for each one. It uses Exa, Apollo, and Claude and takes about 3 minutes.
 
-Multi-agent pipeline where Market Research automatically identifies the key company and triggers Competitor Intelligence on it.
+Market Research at $0.05 scans the web for what is happening right now on any topic and returns a strategic brief you can act on. It uses Brave Search and Claude and takes about 90 seconds.
 
-Prediction markets auto-generated from every research job. Bet YES or NO with real USDC. Markets resolve after 7 days and winners are paid out.
+## Multi-Agent Pipeline
 
-Portfolio page showing all active and resolved prediction positions per user.
+After a Market Research job, the agent automatically identifies the most important company in the space and offers to run Competitor Intelligence on it. This is agent hiring agent with no human input needed between jobs.
 
-Agent ledger with every transaction verifiable on Basescan at wallet 0x1f1b20a42afe4c136ebf89231c7d73750159355d.
+## Prediction Markets
 
-Transaction receipts generated after every job showing tools used, costs, and profit.
+Every research job auto-generates 3 prediction markets from the findings. Users bet YES or NO with real USDC through Locus checkout. Markets expire after 7 days and winners take the pot proportionally. All bets and payouts are recorded onchain.
 
-AI assistant chatbot that knows everything about Odyssey and Locus.
+## Agent Ledger
 
-## Agents
+Every dollar the agent spends on APIs is recorded on Base and visible in the ledger. You can verify every transaction on Basescan at wallet address 0x1f1b20a42afe4c136ebf89231c7d73750159355d.
 
-Competitor Intelligence at $0.10 uses Brave Search, Exa, and Claude to analyze your competitors and find gaps.
+## Portfolio
 
-Lead Generation at $0.20 finds 10 matching companies and writes personalized outreach for each.
+Users can track all their active and resolved prediction market positions in one place. Each position shows the amount wagered, current odds, and potential winnings.
 
-Market Research at $0.05 scans the web and returns a strategic brief on any topic.
+## AI Assistant
+
+A built-in chat assistant knows everything about Odyssey and Locus. Ask it anything about how the platform works, which agent to use, or how payments are processed.
+
+## How Locus Powers Odyssey
+
+Locus is what makes all of this possible. It gives each agent a smart wallet on Base, wraps APIs like Brave Search, Exa, and Claude into pay-per-use services, and handles USDC checkout for prediction betting. Without Locus there is no way to give an AI agent money and let it spend autonomously. Every API call the agent makes is a real USDC transaction settled on Base.
 
 ## Stack
 
 Next.js 16, React 19, TypeScript, Locus Beta API, Base blockchain, USDC, Upstash Redis, Vercel
 
-## Built for
+## Built For
 
 The Synthesis Hackathon, track: AI agents that handle real business financial operations
+
+## Live
+
+https://www.paywithodyssey.xyz
