@@ -28,6 +28,9 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+  <head>
+    <link rel="icon" href="/logo.png" />
+  </head>
       <body style={{ margin: 0, padding: 0 }}>
         <Providers>
           <AuthGate>
