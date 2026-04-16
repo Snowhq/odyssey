@@ -9,7 +9,7 @@ export async function GET() {
       fetch(`${BASE}/pay/balance`, {
         headers: { Authorization: `Bearer ${KEY}` },
       }),
-      fetch(`${BASE}/pay/transactions?limit=20`, {
+      fetch(`${BASE}/pay/transactions?limit=500`, {
         headers: { Authorization: `Bearer ${KEY}` },
       }),
     ]);
