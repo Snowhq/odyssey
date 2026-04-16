@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 
 type Market = {
   id: string; question: string; category: string;
@@ -40,6 +41,8 @@ export default function PredictionsPage() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "open" | "resolved" | "my bets">("all");
+  const { user } = usePrivy();
+  const userId = user?.id || "anonymous";
 
   useEffect(() => {
     fetch("/api/predictions").then(r => r.json())
@@ -56,7 +59,7 @@ export default function PredictionsPage() {
   const filtered = markets.filter(m => {
     if (filter === "open") return !m.resolved;
     if (filter === "resolved") return m.resolved;
-    if (filter === "my bets") return m.bets.length > 0;
+    if (filter === "my bets") return m.bets.some((b: any) => b.userId === userId);
     return true;
   });
 
