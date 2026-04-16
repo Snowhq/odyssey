@@ -36,7 +36,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to create session" }, { status: 500 });
     }
 
-    return NextResponse.json({ redirectUrl: checkoutUrl });
+    const sessionId = raw?.data?.id;
+return NextResponse.json({ redirectUrl: checkoutUrl, sessionId });
   } catch (err) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }

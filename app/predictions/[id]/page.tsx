@@ -50,6 +50,7 @@ function MarketContent() {
   const [placing, setPlacing] = useState(false);
   const [lastSide, setLastSide] = useState<"yes" | "no">("yes");
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [resolving, setResolving] = useState(false);
@@ -90,7 +91,8 @@ function MarketContent() {
         body: JSON.stringify({ marketId: id, side, amount: amt }),
       });
       const data = await res.json();
-      if (data.redirectUrl) {
+if (data.redirectUrl && data.sessionId) {
+  setSessionId(data.sessionId);
         const popup = window.open(
           data.redirectUrl,
           "locus-checkout",
@@ -382,14 +384,14 @@ function MarketContent() {
                       {placing ? "Locus checkout is open. Pay there then click confirm." : "Paid on Locus? Click confirm to record your bet."}
                     </p>
                     <button onClick={() => {
-                      fetch("/api/predictions/confirm", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ marketId: id, side: lastSide, amount: parseFloat(amount), userId }),
-                      }).then(() => { setPlacing(false); setAwaitingConfirm(false); loadMarket(); });
-                    }} style={{ background: "#15803d", color: "#fff", border: "none", padding: "10px 0", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                      I paid — confirm {lastSide.toUpperCase()} bet ✓
-                    </button>
+  fetch("/api/predictions/confirm", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ marketId: id, side: lastSide, amount: parseFloat(amount), userId }),
+  }).then(() => { setPlacing(false); setAwaitingConfirm(false); loadMarket(); });
+}} style={{ background: "#15803d", color: "#fff", border: "none", padding: "10px 0", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+  I paid — confirm {lastSide.toUpperCase()} bet ✓
+</button>
                     <button onClick={() => { setPlacing(false); setAwaitingConfirm(false); }} style={{ background: "transparent", color: "#aaa", border: "none", padding: "8px 0", fontSize: 11, cursor: "pointer", fontFamily: "inherit", width: "100%", marginTop: 6 }}>
                       Cancel
                     </button>
