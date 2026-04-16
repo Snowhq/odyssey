@@ -11,25 +11,22 @@ type Market = {
 export default function PortfolioPage() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"my" | "live">("my");
   const { user } = usePrivy();
-const userId = user?.id || "anonymous";
+  const userId = user?.id || "anonymous";
 
   useEffect(() => {
     fetch("/api/predictions").then(r => r.json()).then(data => {
-      setMarkets(Array.isArray(data) ? data.filter((m: Market) => m.bets.some((b: any) => b.userId === userId)) : []);
+      setMarkets(Array.isArray(data) ? data : []);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
 
-  const totalBet = markets.reduce((acc, m) => acc + m.bets.reduce((a: number, b: any) => a + b.amount, 0), 0);
-  const activeBets = markets.filter(m => !m.resolved);
-  const resolvedBets = markets.filter(m => m.resolved);
+  const myMarkets = markets.filter(m => m.bets.some((b: any) => b.userId === userId));
+  const liveMarkets = markets.filter(m => m.bets.length > 0);
 
-  function getOdds(m: Market) {
-    const total = m.yesTotal + m.noTotal;
-    if (total === 0) return { yes: 50, no: 50 };
-    return { yes: Math.round((m.yesTotal / total) * 100), no: Math.round((m.noTotal / total) * 100) };
-  }
+  const myTotalBet = myMarkets.reduce((acc, m) => acc + m.bets.filter((b: any) => b.userId === userId).reduce((a: number, b: any) => a + b.amount, 0), 0);
+  const liveTotalBet = liveMarkets.reduce((acc, m) => acc + m.bets.reduce((a: number, b: any) => a + b.amount, 0), 0);
 
   function potentialWin(m: Market, bet: any) {
     const total = m.yesTotal + m.noTotal;
@@ -37,6 +34,9 @@ const userId = user?.id || "anonymous";
     if (pool === 0) return (bet.amount * 2).toFixed(3);
     return ((bet.amount / pool) * total).toFixed(3);
   }
+
+  const displayMarkets = tab === "my" ? myMarkets : liveMarkets;
+  const displayBets = (m: Market) => tab === "my" ? m.bets.filter((b: any) => b.userId === userId) : m.bets;
 
   return (
     <main style={{ minHeight: "100vh", background: "#fff", color: "#000", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
@@ -48,8 +48,9 @@ const userId = user?.id || "anonymous";
         .mono { font-family: 'Space Mono', monospace; }
         .nav-a { color: #999; font-size: 13px; transition: color 0.2s; }
         .nav-a:hover { color: #000; }
-        .bet-row { border-bottom: 1px solid #f0f0f0; transition: background 0.15s; display: grid; grid-template-columns: 1fr 120px 120px 120px; gap: 24px; align-items: center; padding: 20px 0; }
+        .bet-row { border-bottom: 1px solid #f0f0f0; transition: background 0.15s; display: grid; grid-template-columns: 1fr 100px 100px 100px; gap: 16px; align-items: center; padding: 20px 0; }
         .bet-row:hover { background: #fafafa; }
+        .tab-btn { cursor: pointer; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 20px; border: none; transition: all 0.15s; background: transparent; }
       `}</style>
 
       <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 48px", height: 56, borderBottom: "1px solid #e5e5e5", position: "sticky", top: 0, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", zIndex: 100 }}>
@@ -66,42 +67,56 @@ const userId = user?.id || "anonymous";
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <a href="/predictions" style={{ color: "#aaa", fontSize: 12, display: "inline-block", marginBottom: 40, letterSpacing: "0.05em" }}>← Back to markets</a>
           <p className="mono" style={{ fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.2em", marginBottom: 20 }}>// portfolio</p>
-          <h1 className="serif" style={{ fontSize: "clamp(52px,9vw,100px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 0.9, color: "#000", marginBottom: 20 }}>
-            My Bets.
+          <h1 className="serif" style={{ fontSize: "clamp(48px,9vw,100px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 0.9, color: "#000", marginBottom: 20 }}>
+            Bets.
           </h1>
-          <p style={{ fontSize: 14, color: "#aaa", lineHeight: 1.7, paddingBottom: 48 }}>Your active and resolved prediction market positions.</p>
+          <p style={{ fontSize: 14, color: "#aaa", lineHeight: 1.7, paddingBottom: 32 }}>Track active prediction market positions.</p>
+
+          {/* Tabs */}
+          <div style={{ display: "flex", borderBottom: "1px solid #e5e5e5" }}>
+            <button className="tab-btn" onClick={() => setTab("my")} style={{ color: tab === "my" ? "#000" : "#aaa", borderBottom: tab === "my" ? "2px solid #000" : "2px solid transparent" }}>
+              My bets {myMarkets.length > 0 ? `(${myMarkets.reduce((a, m) => a + m.bets.filter((b: any) => b.userId === userId).length, 0)})` : ""}
+            </button>
+            <button className="tab-btn" onClick={() => setTab("live")} style={{ color: tab === "live" ? "#000" : "#aaa", borderBottom: tab === "live" ? "2px solid #000" : "2px solid transparent" }}>
+              Live bets {liveMarkets.length > 0 ? `(${liveMarkets.reduce((a, m) => a + m.bets.length, 0)})` : ""}
+            </button>
+          </div>
         </div>
       </section>
 
+      {/* Stats */}
       <section style={{ borderBottom: "1px solid #e5e5e5" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)" }}>
           {[
-            { label: "Total wagered", value: "$" + totalBet.toFixed(2), color: "#000" },
-            { label: "Active positions", value: activeBets.length.toString(), color: "#000" },
-            { label: "Resolved", value: resolvedBets.length.toString(), color: "#059669" },
+            { label: tab === "my" ? "My total wagered" : "Total wagered", value: "$" + (tab === "my" ? myTotalBet : liveTotalBet).toFixed(2), color: "#000" },
+            { label: "Active positions", value: displayMarkets.filter(m => !m.resolved).length.toString(), color: "#000" },
+            { label: "Resolved", value: displayMarkets.filter(m => m.resolved).length.toString(), color: "#059669" },
           ].map((s, i) => (
-            <div key={s.label} style={{ padding: "40px 48px", borderRight: i < 2 ? "1px solid #e5e5e5" : "none" }}>
+            <div key={s.label} style={{ padding: "32px 48px", borderRight: i < 2 ? "1px solid #e5e5e5" : "none" }}>
               <p className="mono" style={{ fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 12 }}>{s.label}</p>
-              <p className="serif" style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 700, color: s.color }}>{s.value}</p>
+              <p className="serif" style={{ fontSize: "clamp(24px,4vw,40px)", fontWeight: 700, color: s.color }}>{s.value}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "64px 48px 100px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 48px 100px" }}>
         {loading ? (
-          <p className="mono" style={{ color: "#aaa", fontSize: 11, padding: "48px 0", letterSpacing: "0.1em" }}>Loading...</p>
-        ) : markets.length === 0 ? (
+          <p className="mono" style={{ color: "#aaa", fontSize: 11, padding: "48px 0" }}>Loading...</p>
+        ) : displayMarkets.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 0" }}>
-            <p style={{ color: "#aaa", fontSize: 15, marginBottom: 24 }}>No bets placed yet.</p>
+            <p style={{ color: "#aaa", fontSize: 15, marginBottom: 24 }}>
+              {tab === "my" ? "No bets placed yet." : "No bets on any markets yet."}
+            </p>
             <a href="/predictions" style={{ display: "inline-block", background: "#000", color: "#fff", padding: "10px 24px", fontSize: 12, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" }}>View markets →</a>
           </div>
         ) : (
           <>
-            {activeBets.length > 0 && (
+            {/* Active */}
+            {displayMarkets.filter(m => !m.resolved).length > 0 && (
               <div style={{ marginBottom: 64 }}>
-                <p className="mono" style={{ fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 0, paddingBottom: 16, borderBottom: "1px solid #e5e5e5" }}>Active positions</p>
-                {activeBets.map(m => m.bets.map((bet, i) => (
+                <p className="mono" style={{ fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.15em", paddingBottom: 16, borderBottom: "1px solid #e5e5e5", marginBottom: 0 }}>Active positions</p>
+                {displayMarkets.filter(m => !m.resolved).map(m => displayBets(m).map((bet, i) => (
                   <a key={`${m.id}-${i}`} href={`/predictions/${m.id}`} className="bet-row" style={{ textDecoration: "none" }}>
                     <div>
                       <p style={{ fontSize: 14, color: "#000", fontWeight: 500, marginBottom: 6, lineHeight: 1.4 }}>{m.question}</p>
@@ -115,11 +130,11 @@ const userId = user?.id || "anonymous";
                     </div>
                     <div>
                       <p className="mono" style={{ fontSize: 10, color: "#aaa", marginBottom: 4 }}>Wagered</p>
-                      <p className="serif" style={{ fontSize: 20, fontWeight: 700, color: "#000" }}>${bet.amount.toFixed(2)}</p>
+                      <p className="serif" style={{ fontSize: 18, fontWeight: 700, color: "#000" }}>${bet.amount.toFixed(2)}</p>
                     </div>
                     <div>
                       <p className="mono" style={{ fontSize: 10, color: "#aaa", marginBottom: 4 }}>To win</p>
-                      <p className="serif" style={{ fontSize: 20, fontWeight: 700, color: "#059669" }}>${potentialWin(m, bet)}</p>
+                      <p className="serif" style={{ fontSize: 18, fontWeight: 700, color: "#059669" }}>${potentialWin(m, bet)}</p>
                     </div>
                   </a>
                 )))}
@@ -127,10 +142,11 @@ const userId = user?.id || "anonymous";
               </div>
             )}
 
-            {resolvedBets.length > 0 && (
+            {/* Resolved */}
+            {displayMarkets.filter(m => m.resolved).length > 0 && (
               <div>
-                <p className="mono" style={{ fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 0, paddingBottom: 16, borderBottom: "1px solid #e5e5e5" }}>Resolved positions</p>
-                {resolvedBets.map(m => m.bets.map((bet, i) => {
+                <p className="mono" style={{ fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.15em", paddingBottom: 16, borderBottom: "1px solid #e5e5e5", marginBottom: 0 }}>Resolved positions</p>
+                {displayMarkets.filter(m => m.resolved).map(m => displayBets(m).map((bet, i) => {
                   const won = bet.side === m.outcome;
                   return (
                     <a key={`${m.id}-${i}`} href={`/predictions/${m.id}`} className="bet-row" style={{ textDecoration: "none" }}>
@@ -146,11 +162,11 @@ const userId = user?.id || "anonymous";
                       </div>
                       <div>
                         <p className="mono" style={{ fontSize: 10, color: "#aaa", marginBottom: 4 }}>Wagered</p>
-                        <p className="serif" style={{ fontSize: 20, fontWeight: 700, color: won ? "#000" : "#aaa" }}>${bet.amount.toFixed(2)}</p>
+                        <p className="serif" style={{ fontSize: 18, fontWeight: 700, color: won ? "#000" : "#aaa" }}>${bet.amount.toFixed(2)}</p>
                       </div>
                       <div>
                         <p className="mono" style={{ fontSize: 10, color: "#aaa", marginBottom: 4 }}>Result</p>
-                        <p className="serif" style={{ fontSize: 20, fontWeight: 700, color: won ? "#059669" : "#dc2626" }}>{won ? "Won ✓" : "Lost ✗"}</p>
+                        <p className="serif" style={{ fontSize: 18, fontWeight: 700, color: won ? "#059669" : "#dc2626" }}>{won ? "Won ✓" : "Lost ✗"}</p>
                       </div>
                     </a>
                   );
