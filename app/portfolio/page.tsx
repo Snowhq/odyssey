@@ -11,7 +11,7 @@ type Market = {
 export default function PortfolioPage() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"my" | "live">("my");
+  const [tab, setTab] = useState<"my">("my");
   const { user } = usePrivy();
   const userId = user?.id || "anonymous";
 
@@ -74,12 +74,9 @@ export default function PortfolioPage() {
 
           {/* Tabs */}
           <div style={{ display: "flex", borderBottom: "1px solid #e5e5e5" }}>
-            <button className="tab-btn" onClick={() => setTab("my")} style={{ color: tab === "my" ? "#000" : "#aaa", borderBottom: tab === "my" ? "2px solid #000" : "2px solid transparent" }}>
-              My bets {myMarkets.length > 0 ? `(${myMarkets.reduce((a, m) => a + m.bets.filter((b: any) => b.userId === userId).length, 0)})` : ""}
-            </button>
-            <button className="tab-btn" onClick={() => setTab("live")} style={{ color: tab === "live" ? "#000" : "#aaa", borderBottom: tab === "live" ? "2px solid #000" : "2px solid transparent" }}>
-              Live bets {liveMarkets.length > 0 ? `(${liveMarkets.reduce((a, m) => a + m.bets.length, 0)})` : ""}
-            </button>
+            <button className="tab-btn" onClick={() => setTab("my")} style={{ color: "#000", borderBottom: "2px solid #000" }}>
+  My bets {myMarkets.length > 0 ? `(${myMarkets.reduce((a, m) => a + m.bets.filter((b: any) => b.userId === userId).length, 0)})` : ""}
+</button>
           </div>
         </div>
       </section>
