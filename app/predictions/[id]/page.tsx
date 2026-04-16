@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState, Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import { usePrivy } from "@privy-io/react-auth";
 
-type Bet = { side: string; amount: number; paidAt: string; txHash: string | null };
+type Bet = { side: string; amount: number; paidAt: string; txHash: string | null; userId?: string };
 type Market = {
   id: string; question: string; category: string; brief: string;
   createdAt: string; expiresAt: string; resolved: boolean; outcome: string | null;
@@ -36,6 +37,8 @@ function MarketContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const id = params.id as string;
+  const { user } = usePrivy();
+  const userId = user?.id || "anonymous";
 
   const justBet = searchParams.get("success") === "true";
   const betSide = searchParams.get("bet");
@@ -68,10 +71,10 @@ function MarketContent() {
       fetch("/api/predictions/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ marketId: id, side: betSide, amount: parseFloat(betAmt) }),
+        body: JSON.stringify({ marketId: id, side: betSide, amount: parseFloat(betAmt), userId }),
       }).then(() => loadMarket());
     }
-  }, [justBet, betSide, betAmt, id, confirmed]);
+  }, [justBet, betSide, betAmt, id, confirmed, userId]);
 
   async function placeBet(side: "yes" | "no") {
     setError("");
@@ -111,7 +114,7 @@ function MarketContent() {
               fetch("/api/predictions/confirm", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ marketId: id, side, amount: amt }),
+                body: JSON.stringify({ marketId: id, side, amount: amt, userId }),
               }).then(() => loadMarket());
             }
           } catch { /* cross-origin */ }
@@ -382,7 +385,7 @@ function MarketContent() {
                       fetch("/api/predictions/confirm", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ marketId: id, side: lastSide, amount: parseFloat(amount) }),
+                        body: JSON.stringify({ marketId: id, side: lastSide, amount: parseFloat(amount), userId }),
                       }).then(() => { setPlacing(false); setAwaitingConfirm(false); loadMarket(); });
                     }} style={{ background: "#15803d", color: "#fff", border: "none", padding: "10px 0", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", letterSpacing: "0.05em", textTransform: "uppercase" }}>
                       I paid — confirm {lastSide.toUpperCase()} bet ✓
