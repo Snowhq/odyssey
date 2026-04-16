@@ -40,7 +40,7 @@ const CAT: Record<string, { bg: string; color: string }> = {
 export default function PredictionsPage() {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "open" | "resolved" | "my bets">("all");
+  const [filter, setFilter] = useState<"all" | "open" | "resolved" | "my bets" | "live bets">("all");
   const { user } = usePrivy();
   const userId = user?.id || "anonymous";
 
@@ -57,11 +57,12 @@ export default function PredictionsPage() {
   };
 
   const filtered = markets.filter(m => {
-    if (filter === "open") return !m.resolved;
-    if (filter === "resolved") return m.resolved;
-    if (filter === "my bets") return m.bets.some((b: any) => b.userId === userId);
-    return true;
-  });
+  if (filter === "open") return !m.resolved;
+  if (filter === "resolved") return m.resolved;
+  if (filter === "my bets") return m.bets.some((b: any) => b.userId === userId);
+  if (filter === "live bets") return m.bets.length > 0;
+  return true;
+});
 
   const totalVol = markets.reduce((a, m) => a + m.yesTotal + m.noTotal, 0);
 
@@ -122,7 +123,7 @@ export default function PredictionsPage() {
 
           {/* Filter tabs */}
           <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #e5e5e5", marginBottom: 0 }}>
-            {(["all", "open", "resolved", "my bets"] as const).map(f => (
+            {(["all", "open", "resolved", "my bets", "live bets"] as const).map(f => (
               <button key={f} className="tab-btn" onClick={() => setFilter(f)} style={{
                 color: filter === f ? "#000" : "#aaa",
                 borderBottom: filter === f ? "2px solid #000" : "2px solid transparent",
