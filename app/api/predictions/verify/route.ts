@@ -5,7 +5,6 @@ const KEY = process.env.LOCUS_API_KEY;
 
 export async function POST(req: NextRequest) {
   const { sessionId } = await req.json();
-
   if (!sessionId) return NextResponse.json({ paid: false });
 
   try {
@@ -13,10 +12,11 @@ export async function POST(req: NextRequest) {
       headers: { Authorization: `Bearer ${KEY}` },
     });
     const data = await res.json();
+    console.log("Locus session:", JSON.stringify(data));
     const status = data?.data?.status;
-    const paid = status === "paid" || status === "completed" || status === "success";
+    const paid = status === "paid" || status === "completed" || status === "success" || status === "PAID" || status === "COMPLETED";
     return NextResponse.json({ paid, status });
-  } catch {
+  } catch (err) {
     return NextResponse.json({ paid: false });
   }
 }

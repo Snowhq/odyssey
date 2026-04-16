@@ -383,7 +383,21 @@ if (data.redirectUrl && data.sessionId) {
                     <p style={{ fontSize: 11, color: "#15803d", marginBottom: 10, fontWeight: 600, lineHeight: 1.5 }}>
                       {placing ? "Locus checkout is open. Pay there then click confirm." : "Paid on Locus? Click confirm to record your bet."}
                     </p>
-                    <button onClick={() => {
+                 <button onClick={async () => {
+  if (!sessionId) {
+    setError("No payment session. Please try betting again.");
+    return;
+  }
+  const verify = await fetch("/api/predictions/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId }),
+  });
+  const v = await verify.json();
+  if (!v.paid) {
+    setError("Payment not detected yet. Please pay on Locus first.");
+    return;
+  }
   fetch("/api/predictions/confirm", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
